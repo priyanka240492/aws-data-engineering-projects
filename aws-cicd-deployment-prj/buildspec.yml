@@ -1,0 +1,34 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+    commands:
+      - echo "No external dependencies for hello world"
+
+  build:
+    commands:
+      - echo "Zipping Lambda source..."
+      - cd src && zip -r ../lambda.zip . && cd ..
+      - echo "Uploading zip to S3..."
+      - aws s3 cp lambda.zip s3://$ARTIFACT_BUCKET/lambda.zip
+
+  post_build:
+    commands:
+      - echo "Deploying CloudFormation stack..."
+      - |
+        aws cloudformation deploy \
+          --template-file template.yaml \
+          --stack-name hello-lambda-stack \
+          --parameter-overrides \
+              ArtifactBucket=$ARTIFACT_BUCKET \
+              ArtifactKey=lambda.zip \
+          --capabilities CAPABILITY_NAMED_IAM \
+          --region $AWS_DEFAULT_REGION
+      - echo "Deployment complete"
+
+artifacts:
+  files:
+    - lambda.zip
+    - template.yaml

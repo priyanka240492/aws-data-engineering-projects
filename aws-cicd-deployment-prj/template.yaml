@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Hello World Lambda - deployed via CloudFormation without SAM
+
+Parameters:
+  ArtifactBucket:
+    Type: String
+    Description: S3 bucket where the Lambda zip is stored
+
+  ArtifactKey:
+    Type: String
+    Description: S3 key (path) of the Lambda zip file
+    Default: lambda.zip
+
+Resources:
+
+  # IAM role for Lambda execution
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: hello-lambda-execution-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  # The Lambda function — pure CloudFormation, no SAM
+  HelloLambdaFunction:
+    Type: AWS::Lambda::Function        # native CF resource type
+    Properties:
+      FunctionName: hello-world-lambda
+      Runtime: python3.12
+      Handler: handler.lambda_handler  # filename.function_name
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Ref ArtifactBucket  # CodeBuild uploads zip here
+        S3Key: !Ref ArtifactKey
+      Timeout: 30
+      MemorySize: 128
+      Environment:
+        Variables:
+          ENV: dev
+
+Outputs:
+  LambdaFunctionName:
+    Value: !Ref HelloLambdaFunction
+
+  LambdaFunctionArn:
+    Value: !GetAtt HelloLambdaFunction.Arn

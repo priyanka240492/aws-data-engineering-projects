@@ -32,7 +32,7 @@ Resources:
   HelloLambdaFunction:
     Type: AWS::Lambda::Function        # native CF resource type
     Properties:
-      FunctionName: hello-world-lambda
+      FunctionName: cicd-deployment-lambda
       Runtime: python3.12
       Handler: handler.lambda_handler  # filename.function_name
       Role: !GetAtt LambdaExecutionRole.Arn

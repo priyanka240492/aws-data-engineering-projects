@@ -10,7 +10,7 @@ phases:
   build:
     commands:
       - echo "Zipping Lambda source..."
-      - cd src && zip -r ../lambda.zip . && cd ..
+      - cd aws-cicd-deployment-prj/lambda-cicd/src && zip -r ../../../lambda.zip . && cd ../../..
       - echo "Uploading zip to S3..."
       - aws s3 cp lambda.zip s3://$ARTIFACT_BUCKET/lambda.zip
 
@@ -19,8 +19,8 @@ phases:
       - echo "Deploying CloudFormation stack..."
       - |
         aws cloudformation deploy \
-          --template-file template.yaml \
-          --stack-name hello-lambda-stack \
+          --template-file aws-cicd-deployment-prj/template.yaml \
+          --stack-name cicd-deployment-stack \
           --parameter-overrides \
               ArtifactBucket=$ARTIFACT_BUCKET \
               ArtifactKey=lambda.zip \
@@ -31,4 +31,4 @@ phases:
 artifacts:
   files:
     - lambda.zip
-    - template.yaml
+    - aws-cicd-deployment-prj/template.yaml
